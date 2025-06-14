@@ -1,108 +1,128 @@
-import { useState } from 'react'
-import { FaEye, FaTrash } from 'react-icons/fa'
-import CustomTable from '../../components/CustomTable'
-import { useTheme } from '../../context/ThemeContext'
+import React, { useState, useEffect } from 'react';
+import { FaChevronDown, FaCheck, FaTimes, FaClock } from 'react-icons/fa';
 
 const LeaveHistory = () => {
-  const { theme } = useTheme()
-  const [leaveData, setLeaveData] = useState([
+  const [leaveHistory, setLeaveHistory] = useState([
     {
       id: 1,
-      date: '2024-01-15',
-      type: 'Annual',
+      startDate: '2024-01-15',
+      endDate: '2024-01-16',
+      type: 'Annual Leave',
       duration: '2 days',
-      status: { text: 'Pending', status: 'Pending' },
-      reason: 'Family vacation'
+      status: 'Approved',
+      reason: 'Personal time off',
+      approvedBy: 'John Manager',
+      approvedOn: '2024-01-10'
     },
     {
       id: 2,
-      date: '2024-01-10',
-      type: 'Sick',
+      startDate: '2024-02-01',
+      endDate: '2024-02-01',
+      type: 'Sick Leave',
       duration: '1 day',
-      status: { text: 'Approved', status: 'Approved' },
-      reason: 'Medical appointment'
+      status: 'Pending',
+      reason: 'Medical appointment',
+      approvedBy: null,
+      approvedOn: null
     }
-  ])
+  ]);
 
-  const [selectedLeave, setSelectedLeave] = useState(null)
-  const [showModal, setShowModal] = useState(false)
+  const [expandedId, setExpandedId] = useState(null);
+  const [filter, setFilter] = useState('all');
 
-  const handleView = (leave) => {
-    setSelectedLeave(leave)
-    setShowModal(true)
-  }
+  const getStatusColor = (status) => {
+    switch (status.toLowerCase()) {
+      case 'approved': return 'bg-green-100 text-green-800';
+      case 'pending': return 'bg-yellow-100 text-yellow-800';
+      case 'rejected': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
 
-  const handleDelete = (id) => {
-    setLeaveData(leaveData.filter(leave => leave.id !== id))
-  }
+  const getStatusIcon = (status) => {
+    switch (status.toLowerCase()) {
+      case 'approved': return <FaCheck className="w-4 h-4" />;
+      case 'pending': return <FaClock className="w-4 h-4" />;
+      case 'rejected': return <FaTimes className="w-4 h-4" />;
+      default: return null;
+    }
+  };
 
-  const headers = ['Date', 'Type', 'Duration', 'Status']
-
-  const renderActions = (row) => (
-    <div className="flex items-center space-x-4">
-      <button
-        onClick={() => handleView(row)}
-        className={`flex items-center space-x-1 ${theme.primary} ${theme.buttonText} px-3 py-2 rounded-lg ${theme.primaryHover} transform hover:scale-105 transition-all duration-200`}
-      >
-        <FaEye className="w-4 h-4" />
-        <span>View</span>
-      </button>
-      <button
-        onClick={() => handleDelete(row.id)}
-        className="flex items-center space-x-1 bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600 transform hover:scale-105 transition-all duration-200"
-      >
-        <FaTrash className="w-4 h-4" />
-        <span>Delete</span>
-      </button>
-    </div>
-  )
+  const filteredHistory = leaveHistory.filter(leave => {
+    if (filter === 'all') return true;
+    return leave.status.toLowerCase() === filter.toLowerCase();
+  });
 
   return (
-    <div className={`p-6 ${theme.background} min-h-screen`}>
-      <div className={`${theme.card} rounded-xl shadow-lg border ${theme.border} transform hover:scale-102 transition-all duration-200`}>
-        <div className="p-6">
-          <h2 className={`text-2xl font-bold ${theme.heading} mb-6`}>
-            Leave History
-          </h2>
-          <CustomTable
-            headers={headers}
-            data={leaveData}
-            actions={renderActions}
-          />
+    <div className="p-8 bg-gray-50 min-h-screen">
+      <div className="max-w-5xl mx-auto">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-gray-800">Leave History</h2>
+          <select
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            className="px-4 py-2 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option value="all">All Requests</option>
+            <option value="approved">Approved</option>
+            <option value="pending">Pending</option>
+            <option value="rejected">Rejected</option>
+          </select>
+        </div>
+
+        <div className="space-y-4">
+          {filteredHistory.map((leave) => (
+            <div key={leave.id} className="bg-white rounded-lg shadow-md overflow-hidden">
+              <div className="p-4 flex items-center justify-between cursor-pointer hover:bg-gray-50"
+                   onClick={() => setExpandedId(expandedId === leave.id ? null : leave.id)}>
+                <div className="flex items-center space-x-4">
+                  <div className="flex flex-col">
+                    <span className="font-medium text-gray-900">{leave.type}</span>
+                    <span className="text-sm text-gray-500">
+                      {leave.startDate === leave.endDate
+                        ? leave.startDate
+                        : `${leave.startDate} - ${leave.endDate}`
+                      }
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-4">
+                  <span className="text-sm text-gray-600">{leave.duration}</span>
+                  <div className={`px-3 py-1 rounded-full flex items-center space-x-1 ${getStatusColor(leave.status)}`}>
+                    {getStatusIcon(leave.status)}
+                    <span>{leave.status}</span>
+                  </div>
+                  <FaChevronDown className={`w-4 h-4 text-gray-400 transform transition-transform ${expandedId === leave.id ? 'rotate-180' : ''}`} />
+                </div>
+              </div>
+              {expandedId === leave.id && (
+                <div className="px-4 pb-4 border-t border-gray-100">
+                  <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <p className="text-gray-600">Reason:</p>
+                      <p className="font-medium">{leave.reason}</p>
+                    </div>
+                    {leave.status === 'Approved' && (
+                      <>
+                        <div>
+                          <p className="text-gray-600">Approved By:</p>
+                          <p className="font-medium">{leave.approvedBy}</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-600">Approved On:</p>
+                          <p className="font-medium">{leave.approvedOn}</p>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
         </div>
       </div>
-
-      {showModal && selectedLeave && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className={`${theme.card} rounded-xl p-6 w-full max-w-md shadow-2xl border ${theme.border} transform transition-all duration-200`}>
-            <h3 className={`text-xl font-bold ${theme.heading} mb-6`}>Leave Details</h3>
-            <div className="space-y-4">
-              {Object.entries(selectedLeave).map(([key, value]) => (
-                key !== 'id' && (
-                  <p key={key} className="flex justify-between items-center">
-                    <span className={`font-medium ${theme.textSecondary}`}>
-                      {key.charAt(0).toUpperCase() + key.slice(1)}:
-                    </span>
-                    <span className={theme.text}>
-                      {typeof value === 'object' ? value.text : value}
-                    </span>
-                  </p>
-                )
-              ))}
-            </div>
-            <div className="mt-6 flex justify-end">
-              <button
-                onClick={() => setShowModal(false)}
-                className={`${theme.primary} ${theme.buttonText} px-4 py-2 rounded-lg ${theme.primaryHover} transform hover:scale-105 transition-all duration-200`}
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
-  )
-}
+  );
+};
 
-export default LeaveHistory
+export default LeaveHistory;

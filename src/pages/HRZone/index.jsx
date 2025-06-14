@@ -1,86 +1,34 @@
-import { useTheme } from '../../context/ThemeContext'
-import { Routes, Route, useNavigate, useLocation } from 'react-router-dom'
-import RequestLeave from './RequestLeave'
-import LeaveHistory from './LeaveHistory'
-import TeamCalendar from './TeamCalendar'
-import Approvals from './Approvals'
-import Reports from './Reports'
+import { FaClipboardList, FaCalendarAlt, FaFileAlt } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 
 const HRZone = () => {
-  const { theme } = useTheme()
-  const navigate = useNavigate()
-  const location = useLocation()
+  const navigate = useNavigate();
 
-  const leaveData = [
-    { type: 'Annual Leave', count: 15, color: 'text-purple-600' },
-    { type: 'Sick Leave', count: 10, color: 'text-purple-500' },
-    { type: 'Personal Leave', count: 5, color: 'text-purple-400' },
-    { type: 'Bereavement Leave', count: 5, color: 'text-purple-600' },
-    { type: 'Parental Leave', count: 12, color: 'text-purple-500' },
-    { type: 'Unpaid Leave', count: 0, color: 'text-purple-400' }
-  ]
-
-  const navigationItems = [
-    { path: '/hr-zone/request-leave', label: '📝 Request Leave' },
-    { path: '/hr-zone/leave-history', label: '📅 Leave History' },
-    { path: '/hr-zone/team-calendar', label: '👥 Team Calendar' },
-    { path: '/hr-zone/approvals', label: '✓ Approvals' },
-    { path: '/hr-zone/reports', label: '📊 Reports' }
-  ]
+  const menuItems = [
+    { icon: FaFileAlt, label: 'Request Leave', path: '/hr-zone/request-leave' },
+    { icon: FaClipboardList, label: 'Leave History', path: '/hr-zone/leave-history' },
+    { icon: FaCalendarAlt, label: 'Reports', path: '/hr-zone/reports' }
+  ];
 
   return (
-    <div className={`min-h-screen ${theme.background} p-6`}>
-      <div className="max-w-7xl mx-auto space-y-8">
-        <div>
-          <h1 className={`text-2xl font-bold ${theme.heading} mb-4`}>
-            HR Zone
-          </h1>
-          <p className={`${theme.textSecondary} mb-6`}>
-            Manage employee information, recruitment, training, compensation, and more.
-          </p>
-
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
-            {navigationItems.map((item, index) => (
-              <button
-                key={index}
-                onClick={() => navigate(item.path)}
-                className={`${index % 2 === 0 ? theme.primary : theme.secondary} ${theme.buttonText} rounded-xl p-4 shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center space-x-2`}
-              >
-                <span className="text-lg">{item.label}</span>
-              </button>
-            ))}
-          </div>
-
-          <div className="mb-8">
-            <Routes>
-              <Route path="/" element={
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-                  {leaveData.map((leave, index) => (
-                    <div
-                      key={index}
-                      className={`${theme.card} rounded-xl p-6 shadow-lg border ${theme.border} transform hover:scale-102 transition-all duration-200`}
-                    >
-                      <h3 className={`text-lg font-semibold ${theme.textSecondary} mb-2`}>
-                        {leave.type}
-                      </h3>
-                      <p className={`text-3xl font-bold ${leave.color}`}>
-                        {leave.count}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              } />
-              <Route path="request-leave" element={<RequestLeave />} />
-              <Route path="leave-history" element={<LeaveHistory />} />
-              <Route path="team-calendar" element={<TeamCalendar />} />
-              <Route path="approvals" element={<Approvals />} />
-              <Route path="reports" element={<Reports />} />
-            </Routes>
-          </div>
-        </div>
+    <div className="container mx-auto px-8 py-12 bg-gray-50 min-h-screen">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-16 max-w-5xl mx-auto">
+        {menuItems.map((item, index) => {
+          const Icon = item.icon;
+          return (
+            <button
+              key={index}
+              onClick={() => navigate(item.path)}
+              className="flex flex-col items-center justify-center p-8 bg-blue-600 text-white rounded-2xl hover:bg-blue-700 transition-all duration-300 w-full max-w-xs mx-auto shadow-xl transform hover:scale-110 hover:shadow-2xl"
+            >
+              <Icon className="text-6xl mb-4" />
+              <span className="text-xl text-center font-semibold tracking-tight">{item.label}</span>
+            </button>
+          );
+        })}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default HRZone
+export default HRZone;

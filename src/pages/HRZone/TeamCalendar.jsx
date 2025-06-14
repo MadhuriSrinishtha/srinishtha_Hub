@@ -6,23 +6,34 @@ const TeamCalendar = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date())
 
   const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
-  const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
-  // Sample leave data
+  // Sample leave data - you can replace this with your actual data
   const leaveData = {
-    '2024-05-15': { type: 'Annual', employee: 'John Doe' },
-    '2024-05-16': { type: 'Annual', employee: 'John Doe' },
-    '2024-05-20': { type: 'Sick', employee: 'Jane Smith' },
-    '2024-05-25': { type: 'Personal', employee: 'Mike Johnson' }
+    '2024-05-11': [{ type: 'Annual', employee: 'Alex' }],
+    '2024-05-12': [{ type: 'Annual', employee: 'Alex' }],
+    '2024-05-13': [{ type: 'Annual', employee: 'Alex' }],
+    '2024-05-16': [{ type: 'Annual', employee: 'You' }],
+    '2024-05-17': [{ type: 'Annual', employee: 'You' }],
+    '2024-05-18': [{ type: 'Annual', employee: 'You' }],
+    '2024-05-19': [{ type: 'Annual', employee: 'You' }],
+    '2024-05-20': [{ type: 'Annual', employee: 'You' }, { type: 'Sick', employee: 'Michael' }],
+    '2024-05-21': [{ type: 'Annual', employee: 'You' }],
+    '2024-05-22': [{ type: 'Annual', employee: 'You' }],
+    '2024-05-23': [{ type: 'Annual', employee: 'You' }],
+    '2024-05-26': [{ type: 'Sick', employee: 'Sarah' }],
+    '2024-05-27': [{ type: 'Sick', employee: 'Sarah' }],
+    '2024-05-28': [{ type: 'Sick', employee: 'Sarah' }],
+    '2024-05-29': [{ type: 'Sick', employee: 'Sarah' }]
   }
 
-  // Calendar helper functions remain the same
   const getDaysInMonth = (date) => {
     return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate()
   }
 
   const getFirstDayOfMonth = (date) => {
-    return new Date(date.getFullYear(), date.getMonth(), 1).getDay()
+    let day = new Date(date.getFullYear(), date.getMonth(), 1).getDay()
+    return day === 0 ? 6 : day - 1 // Adjust for Monday start
   }
 
   const formatDate = (year, month, day) => {
@@ -37,6 +48,16 @@ const TeamCalendar = () => {
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))
   }
 
+  const getLeaveColor = (employee) => {
+    switch(employee) {
+      case 'You': return 'bg-blue-100'
+      case 'Alex': return 'bg-purple-100'
+      case 'Michael': return 'bg-red-100'
+      case 'Sarah': return 'bg-blue-100'
+      default: return 'bg-gray-100'
+    }
+  }
+
   const renderCalendar = () => {
     const daysInMonth = getDaysInMonth(currentMonth)
     const firstDay = getFirstDayOfMonth(currentMonth)
@@ -46,29 +67,42 @@ const TeamCalendar = () => {
 
     // Add empty cells for days before the first day of the month
     for (let i = 0; i < firstDay; i++) {
-      calendar.push(<div key={`empty-${i}`} className="p-2 md:p-4"></div>)
+      calendar.push(
+        <div key={`empty-${i}`} className={`border ${theme.border} p-4 min-h-[100px]`}>
+          <span className="text-gray-400">28</span>
+        </div>
+      )
     }
 
     // Add cells for each day of the month
     for (let day = 1; day <= daysInMonth; day++) {
       const date = formatDate(year, month, day)
-      const hasLeave = leaveData[date]
+      const leaves = leaveData[date] || []
+      const isToday = day === 29 // Example for highlighting current day
 
       calendar.push(
         <div
           key={day}
-          className={`p-2 md:p-4 rounded-lg ${theme.cardHover} border ${theme.border} transform hover:scale-105 transition-all duration-200 relative min-h-[80px] md:min-h-[100px]`}
+          className={`border ${theme.border} p-4 min-h-[100px] relative ${isToday ? 'border-purple-500 border-2' : ''}`}
         >
-          <span className={`text-sm md:text-base font-bold ${theme.textSecondary}`}>{day}</span>
-          {hasLeave && (
-            <div className={`mt-1 md:mt-2 text-xs md:text-sm ${theme.text}`}>
-              <div className={`px-1 md:px-2 py-0.5 md:py-1 rounded ${hasLeave.type === 'Annual' ? 'bg-blue-100 text-blue-700' : 
-                hasLeave.type === 'Sick' ? 'bg-red-100 text-red-700' : 'bg-purple-100 text-purple-700'}`}>
-                <div className="truncate text-xs md:text-sm">{hasLeave.employee}</div>
-                <div className="font-medium text-xs md:text-sm">{hasLeave.type}</div>
+          <div className="flex justify-between items-start">
+            <span className={theme.text}>{day}</span>
+            {leaves.length > 0 && (
+              <span className="bg-purple-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                {leaves.length}
+              </span>
+            )}
+          </div>
+          <div className="mt-2 space-y-1">
+            {leaves.map((leave, idx) => (
+              <div
+                key={idx}
+                className={`${getLeaveColor(leave.employee)} p-1 rounded text-sm`}
+              >
+                {leave.employee}
               </div>
-            </div>
-          )}
+            ))}
+          </div>
         </div>
       )
     }
@@ -77,60 +111,41 @@ const TeamCalendar = () => {
   }
 
   return (
-    <div className={`p-3 md:p-6 ${theme.background}`}>
-      <div className={`${theme.card} rounded-xl shadow-lg border ${theme.border}`}>
-        <div className="p-3 md:p-6">
-          <div className="flex flex-col md:flex-row justify-between items-center mb-4 md:mb-6 space-y-3 md:space-y-0">
-            <h2 className={`text-xl md:text-2xl font-bold ${theme.heading}`}>Team Calendar</h2>
-            <div className="flex items-center space-x-2 md:space-x-4">
-              <button
-                onClick={handlePrevMonth}
-                className={`p-1.5 md:p-2 rounded-lg ${theme.primary} ${theme.buttonText} ${theme.primaryHover}`}
-              >
-                ←
-              </button>
-              <span className={`text-base md:text-lg font-semibold ${theme.heading}`}>
-                {months[currentMonth.getMonth()]} {currentMonth.getFullYear()}
-              </span>
-              <button
-                onClick={handleNextMonth}
-                className={`p-1.5 md:p-2 rounded-lg ${theme.primary} ${theme.buttonText} ${theme.primaryHover}`}
-              >
-                →
-              </button>
-            </div>
-          </div>
-
-          {/* Calendar header - Days of week */}
-          <div className="grid grid-cols-7 gap-1 md:gap-2 mb-2 md:mb-4">
-            {days.map(day => (
-              <div key={day} className={`text-center text-xs md:text-sm font-semibold ${theme.textSecondary}`}>
-                {day}
-              </div>
-            ))}
-          </div>
-
-          {/* Calendar grid */}
-          <div className="grid grid-cols-7 gap-1 md:gap-2">
-            {renderCalendar()}
-          </div>
-
-          {/* Legend */}
-          <div className="mt-4 md:mt-6 flex flex-wrap md:flex-nowrap justify-center md:justify-start space-x-2 md:space-x-4">
-            <div className="flex items-center mb-2 md:mb-0">
-              <div className="w-3 h-3 md:w-4 md:h-4 rounded bg-blue-100 mr-1 md:mr-2"></div>
-              <span className={`text-xs md:text-sm ${theme.text}`}>Annual Leave</span>
-            </div>
-            <div className="flex items-center mb-2 md:mb-0">
-              <div className="w-3 h-3 md:w-4 md:h-4 rounded bg-red-100 mr-1 md:mr-2"></div>
-              <span className={`text-xs md:text-sm ${theme.text}`}>Sick Leave</span>
-            </div>
-            <div className="flex items-center mb-2 md:mb-0">
-              <div className="w-3 h-3 md:w-4 md:h-4 rounded bg-purple-100 mr-1 md:mr-2"></div>
-              <span className={`text-xs md:text-sm ${theme.text}`}>Personal Leave</span>
-            </div>
-          </div>
+    <div className={`p-6 ${theme.background}`}>
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center space-x-2">
+          <span className="text-2xl">📅</span>
+          <h2 className={`text-2xl font-semibold ${theme.heading}`}>Team Leave Calendar</h2>
         </div>
+        <div className="flex items-center space-x-4">
+          <button
+            onClick={handlePrevMonth}
+            className={`text-2xl ${theme.text}`}
+          >
+            ‹
+          </button>
+          <span className={`text-lg font-medium ${theme.heading}`}>
+            {months[currentMonth.getMonth()]} {currentMonth.getFullYear()}
+          </span>
+          <button
+            onClick={handleNextMonth}
+            className={`text-2xl ${theme.text}`}
+          >
+            ›
+          </button>
+          <button className={`ml-4 px-3 py-1 rounded ${theme.primary} text-white`}>
+            Today
+          </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-7 gap-px">
+        {days.map(day => (
+          <div key={day} className={`p-4 text-sm font-medium ${theme.textSecondary} text-center`}>
+            {day}
+          </div>
+        ))}
+        {renderCalendar()}
       </div>
     </div>
   )

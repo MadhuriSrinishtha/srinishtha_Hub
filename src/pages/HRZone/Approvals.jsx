@@ -4,7 +4,7 @@ import CustomTable from '../../components/CustomTable'
 const Approvals = () => {
   const { theme } = useTheme()
 
-  const headers = ['Employee', 'Leave Type', 'Duration', 'Status'] // Removed 'Actions' from headers
+  const headers = ['Employee', 'Leave Type', 'Duration', 'Actions', 'Status']
   const approvalData = [
     {
       employee: 'John Doe',
@@ -19,9 +19,7 @@ const Approvals = () => {
       <button className={`px-4 py-2 rounded-lg ${theme.primary} ${theme.buttonText} ${theme.primaryHover} transform hover:scale-105 transition-all duration-200`}>
         Approve
       </button>
-      <button className="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transform hover:scale-105 transition-all duration-200">
-        Reject
-      </button>
+     
     </div>
   )
 
